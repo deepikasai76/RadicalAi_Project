@@ -1,0 +1,33 @@
+streamlit
+pypdf
+chromadb
+sentence-transformers
+pandas
+numpy
+rank-bm25
+scikit-learn
+openai
+python-dotenv
+
+# Export and Integration Dependencies
+reportlab
+python-docx
+python-pptx
+openpyxl
+
+# API and Integration Dependencies
+flask
+flask-cors
+flask-limiter
+
+# Google Drive Integration
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Dropbox Integration
+dropbox
+
+# Additional utilities
+requests 

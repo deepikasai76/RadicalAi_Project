@@ -1,0 +1,234 @@
+/* Radical AI - Enhanced Document Upload Styling */
+
+/* === GLOBAL === */
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Main header */
+.main-header {
+    background: linear-gradient(135deg, #5f72be, #9b23ea);
+    padding: 3.5rem 2rem;
+    border-radius: 24px;
+    text-align: center;
+    color: white;
+    margin-bottom: 3rem;
+    box-shadow: 0 16px 48px rgba(91, 44, 222, 0.4);
+}
+
+.main-header h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.25);
+}
+
+.main-header p {
+    font-size: 1.4rem;
+    opacity: 0.95;
+}
+
+.main-header .subtitle {
+    font-size: 1.1rem;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+/* Upload area */
+.upload-area {
+    border: 3px dashed #7c5fff;
+    border-radius: 16px;
+    padding: 4rem;
+    text-align: center;
+    background: linear-gradient(135deg, #f9faff, #eef0ff);
+    transition: all 0.3s ease;
+    margin: 2.5rem 0;
+}
+
+.upload-area:hover {
+    border-color: #9b23ea;
+    background: linear-gradient(135deg, #f0f2ff, #e4e7ff);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(123, 97, 255, 0.25);
+}
+
+.upload-icon {
+    font-size: 4.2rem;
+    margin-bottom: 1rem;
+    color: #6c5ce7;
+}
+
+.upload-text {
+    font-size: 1.35rem;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.upload-hint {
+    font-size: 1.05rem;
+    color: #555;
+    opacity: 0.85;
+}
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(90deg, #5f72be, #9b23ea);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2.2rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 24px rgba(95, 114, 190, 0.3);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 36px rgba(95, 114, 190, 0.4);
+}
+
+/* Success box */
+.success-box {
+    background: linear-gradient(135deg, #38f9d7 0%, #43e97b 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    margin: 2rem 0;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(56, 249, 215, 0.3);
+}
+
+.success-box h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.success-box p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+/* Info box */
+.info-box {
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+    color: #222;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin: 1.5rem 0;
+    box-shadow: 0 6px 20px rgba(193, 233, 251, 0.3);
+}
+
+/* Warning box */
+.warning-box {
+    background: linear-gradient(135deg, #fa709a, #fee140);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin: 1.5rem 0;
+    box-shadow: 0 6px 20px rgba(250, 112, 154, 0.4);
+}
+
+/* File info card */
+.file-info {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 14px;
+    border-left: 6px solid #7c5fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    margin: 1.2rem 0;
+}
+
+.file-info h4 {
+    color: #7c5fff;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.file-info p {
+    color: #666;
+    font-size: 1.05rem;
+    margin: 0.2rem 0;
+}
+
+/* Progress bar */
+.stProgress > div > div > div {
+    background: linear-gradient(90deg, #7c5fff, #9b23ea);
+    border-radius: 10px;
+}
+
+/* Input fields */
+.stTextInput > div > div > input {
+    border-radius: 12px;
+    border: 2px solid #dadce0;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #7c5fff;
+    box-shadow: 0 0 0 4px rgba(124, 95, 255, 0.15);
+}
+
+/* Instruction Section */
+.instructions {
+    background: linear-gradient(135deg, #f9faff, #eef0ff);
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin: 1.5rem 0;
+    border-left: 6px solid #7c5fff;
+}
+
+.instructions h3 {
+    color: #7c5fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+}
+
+.instructions ol {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
+}
+
+.instructions li {
+    margin-bottom: 0.4rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .main-header p {
+        font-size: 1.2rem;
+    }
+
+    .upload-area {
+        padding: 2rem;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+    }
+
+    .upload-text {
+        font-size: 1.1rem;
+    }
+}
+
+/* Pulse animation for loading */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.loading-pulse {
+    animation: pulse 2s infinite;
+}
