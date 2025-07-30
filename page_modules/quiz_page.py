@@ -6,13 +6,15 @@ Class-based approach for the quiz generation and scoring page.
 import streamlit as st
 from ui_components import render_back_button
 
+## Quiz Page Class for handling the quiz generation and scoring functionality
 class QuizPage:
     """Handles the quiz generation and scoring functionality."""
     
     def __init__(self, vector_store, quiz_generator):
-        self.vector_store = vector_store
-        self.quiz_generator = quiz_generator
+        self.vector_store = vector_store # vector_store is a vector store that contains the documents
+        self.quiz_generator = quiz_generator # quiz_generator is a quiz generator that generates the quizzes
     
+    # Render the quiz page
     def render(self):
         """Render the quiz page."""
         st.title("📝 Quiz Generation")
@@ -35,6 +37,7 @@ class QuizPage:
         else:
             self._render_quiz_generation(selected_doc)
     
+    # Render message when no documents are available
     def _render_no_documents(self):
         """Render message when no documents are available."""
         st.info("No documents indexed yet. Please upload and process a PDF first.")
@@ -42,19 +45,22 @@ class QuizPage:
             st.session_state.current_page = "upload"
             st.rerun()
     
+    # Render the quiz generation section
     def _render_quiz_generation(self, selected_doc):
         """Render the quiz generation section."""
         st.subheader("Generate Quiz")
         
+        # Number of questions slider
         col1, col2 = st.columns(2)
-        with col1:
+        with col1: # Number of questions slider
             num_questions = st.slider("Number of questions", 1, 10, 5)
-        with col2:
+        with col2: # Difficulty selector
             difficulty = st.selectbox("Difficulty", ["mixed", "easy", "medium", "hard"])
         
         if st.button("🎲 Generate Quiz", use_container_width=True, key="quiz_generate"):
             self._generate_quiz(selected_doc, num_questions, difficulty)
     
+    # Generate a new quiz
     def _generate_quiz(self, selected_doc, num_questions, difficulty):
         """Generate a new quiz."""
         with st.spinner("Generating quiz..."):
@@ -63,7 +69,7 @@ class QuizPage:
                 num_questions=num_questions, 
                 difficulty=difficulty
             )
-        
+        # If the quiz is generated successfully, show a success message
         if quiz:
             st.session_state.quiz = quiz
             st.session_state.user_answers = {}
@@ -73,6 +79,7 @@ class QuizPage:
         else:
             st.warning("Could not generate quiz questions from this document.")
     
+    # Render the quiz display section
     def _render_quiz_display(self, selected_doc):
         """Render the quiz display and answer collection."""
         quiz = st.session_state.quiz
@@ -98,6 +105,7 @@ class QuizPage:
         if st.session_state.get('quiz_submitted', False):
             self._render_quiz_results(quiz)
     
+    # Render a single question with appropriate input method
     def _render_question(self, question_num, question):
         """Render a single question with appropriate input method."""
         st.markdown(f"**Question {question_num}:**")
@@ -111,6 +119,7 @@ class QuizPage:
         else:
             self._render_short_answer(question_num, question)
     
+    # Render multiple choice question
     def _render_multiple_choice(self, question_num, question):
         """Render multiple choice question."""
         options = question['options']
@@ -122,6 +131,7 @@ class QuizPage:
         )
         st.session_state.user_answers[f"q{question_num}"] = user_answer
     
+    # Render true/false question
     def _render_true_false(self, question_num, question):
         """Render true/false question."""
         user_answer = st.radio(
@@ -131,6 +141,7 @@ class QuizPage:
         )
         st.session_state.user_answers[f"q{question_num}"] = user_answer
     
+    # Render short answer question
     def _render_short_answer(self, question_num, question):
         """Render short answer question."""
         user_answer = st.text_input(
@@ -140,6 +151,7 @@ class QuizPage:
         )
         st.session_state.user_answers[f"q{question_num}"] = user_answer
     
+    # Render submit and new quiz buttons
     def _render_quiz_actions(self):
         """Render submit and new quiz buttons."""
         col1, col2 = st.columns(2)
@@ -151,6 +163,7 @@ class QuizPage:
             if st.button("🔄 New Quiz", use_container_width=True, key="quiz_new"):
                 self._clear_quiz()
     
+    # Submit the quiz and validate answers
     def _submit_quiz(self):
         """Submit the quiz and validate answers."""
         quiz = st.session_state.quiz
@@ -171,6 +184,7 @@ class QuizPage:
         else:
             st.error(f"⚠️ Please answer all questions. Missing: {', '.join(map(str, missing_questions))}")
     
+    # Clear the current quiz and start over
     def _clear_quiz(self):
         """Clear the current quiz and start over."""
         if 'quiz' in st.session_state:
@@ -181,6 +195,7 @@ class QuizPage:
             del st.session_state.quiz_submitted
         st.rerun()
     
+    # Render the quiz results and scoring
     def _render_quiz_results(self, quiz):
         """Render the quiz results and scoring."""
         st.markdown("---")
@@ -205,6 +220,7 @@ class QuizPage:
         # Calculate and display final score
         self._render_final_score(correct_answers, total_questions)
     
+    # Check if a user answer is correct based on question type
     def _check_answer_correctness(self, question, user_answer, correct_answer):
         """Check if a user answer is correct based on question type."""
         if question.get('type') == 'multiple_choice':
@@ -216,6 +232,7 @@ class QuizPage:
             return (user_answer.lower().strip() in correct_answer.lower() or 
                    correct_answer.lower() in user_answer.lower())
     
+    # Render the result for a single question
     def _render_question_result(self, question_num, question, user_answer, correct_answer, is_correct):
         """Render the result for a single question."""
         with st.expander(f"Question {question_num} - {'✅ Correct' if is_correct else '❌ Incorrect'}"):
@@ -225,7 +242,8 @@ class QuizPage:
             # Show explanation if available
             if 'explanation' in question:
                 st.success("💡 **Explanation:** " + question['explanation'])
-    
+
+    # Render the final score and performance feedback
     def _render_final_score(self, correct_answers, total_questions):
         """Render the final score and performance feedback."""
         score_percentage = (correct_answers / total_questions) * 100
@@ -249,17 +267,18 @@ class QuizPage:
         st.markdown("---")
         st.markdown("### 🎯 What would you like to do next?")
         
+        # Add navigation buttons
         col1, col2, col3 = st.columns(3)
-        
+        # Ask More Questions button
         with col1:
             if st.button("❓ Ask More Questions", use_container_width=True, key="quiz_ask_more"):
                 st.session_state.current_page = "qa"
                 st.rerun()
-        
+        # New Quiz button
         with col2:
             if st.button("🔄 New Quiz", use_container_width=True, key="quiz_new_after_results"):
                 self._clear_quiz()
-        
+        # View History button
         with col3:
             if st.button("💬 View History", use_container_width=True, key="quiz_view_history"):
                 st.session_state.current_page = "history"
