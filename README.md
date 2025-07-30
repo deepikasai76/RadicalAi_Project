@@ -183,7 +183,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Common Issues
 
-1. **Ollama Timeout**: See `OLLAMA_TROUBLESHOOTING.md`
+1. **Ollama Timeout**: Check if Ollama server is running with `ollama serve`
 2. **Model Not Found**: Run `ollama pull model_name`
 3. **API Key Issues**: Check `.env` file configuration
 4. **Import Errors**: Install missing dependencies with `pip install -r requirements.txt`
