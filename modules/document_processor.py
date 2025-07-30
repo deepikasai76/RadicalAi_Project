@@ -8,7 +8,7 @@ import pypdf
 import re
 import os
 
-
+# Document Processor Class for handling PDF document processing, text extraction, and chunking operations
 class DocumentProcessor:
     """
     Handles PDF document processing, text extraction, and chunking operations.
@@ -25,6 +25,7 @@ class DocumentProcessor:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
     
+    # Extract text from a PDF file
     def extract_text_from_pdf(self, pdf_path: str) -> str:
         """
         Extract text from a PDF file.
@@ -40,23 +41,24 @@ class DocumentProcessor:
         """
         try:
             with open(pdf_path, 'rb') as file:
-                pdf_reader = pypdf.PdfReader(file)
+                pdf_reader = pypdf.PdfReader(file) # pypdf is a library for reading and writing PDF files
                 text = ""
-                
+                # Extract text from each page of the PDF file
                 for page_num, page in enumerate(pdf_reader.pages):
                     try:
-                        page_text = page.extract_text()
+                        page_text = page.extract_text() # extract_text() is a method of the Page object that extracts the text from the page
                         if page_text.strip():
                             text += f"\n--- Page {page_num + 1} ---\n{page_text}\n"
                     except Exception as e:
                         print(f"Warning: Could not extract text from page {page_num + 1}: {e}")
                         continue
-                
-                return text.strip()
+                # Return the extracted text
+                return text.strip() ## strip() is a method of the string object that removes leading and trailing whitespace
                 
         except Exception as e:
             raise Exception(f"Failed to process PDF {pdf_path}: {str(e)}")
-    
+
+    # Clean and preprocess extracted text
     def clean_text(self, text: str) -> str:
         """
         Clean and preprocess extracted text.
@@ -71,7 +73,11 @@ class DocumentProcessor:
             return ""
         
         # Remove excessive whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'\s+', ' ', text) 
+        """
+        re.sub() is a method of the re module that substitutes the first argument 
+        with the second argument in the third argument
+        """
         
         # Remove page markers
         text = re.sub(r'--- Page \d+ ---', '', text)
@@ -81,6 +87,7 @@ class DocumentProcessor:
         
         return text.strip()
     
+    # Split text into overlapping chunks
     def chunk_text(self, text: str) -> List[str]:
         """
         Split text into overlapping chunks.
@@ -96,7 +103,7 @@ class DocumentProcessor:
         
         chunks = []
         start = 0
-        
+        # Split the text into chunks
         while start < len(text):
             end = start + self.chunk_size
             
@@ -108,6 +115,7 @@ class DocumentProcessor:
                         end = i + 1
                         break
             
+            # Create a chunk of text
             chunk = text[start:end].strip()
             if chunk:
                 chunks.append(chunk)
@@ -119,6 +127,7 @@ class DocumentProcessor:
         
         return chunks
     
+    # Process a single PDF file
     def process_single_pdf(self, pdf_path: str) -> List[str]:
         """
         Process a single PDF file: extract, clean, and chunk text.
@@ -132,24 +141,30 @@ class DocumentProcessor:
         Raises:
             Exception: If processing fails
         """
+        # Try to process the PDF file
         try:
             # Extract text
             raw_text = self.extract_text_from_pdf(pdf_path)
+             # extract_text_from_pdf() is a method of the DocumentProcessor class that extracts the text from the PDF file
             
             # Clean text
-            cleaned_text = self.clean_text(raw_text)
+            cleaned_text = self.clean_text(raw_text) 
+            # clean_text() is a method of the DocumentProcessor class that cleans the text
             
             # Chunk text
-            chunks = self.chunk_text(cleaned_text)
+            chunks = self.chunk_text(cleaned_text) 
+            # chunk_text() is a method of the DocumentProcessor class that chunks the text
             
+            # If no chunks are generated, raise an exception
             if not chunks:
                 raise Exception(f"No text content extracted from {pdf_path}")
             
             return chunks
-            
+         # If the processing fails, raise an exception
         except Exception as e:
             raise Exception(f"Failed to process {pdf_path}: {str(e)}")
     
+    # Process multiple PDF files
     def process_pdfs(self, pdf_paths: List[str]) -> Dict[str, List[str]]:
         """
         Process multiple PDF files.
@@ -161,14 +176,14 @@ class DocumentProcessor:
             Dict[str, List[str]]: Dictionary mapping filename to chunks
         """
         results = {}
-        
+        # Process each PDF file
         for pdf_path in pdf_paths:
-            try:
+            try: #
                 filename = os.path.basename(pdf_path)
                 chunks = self.process_single_pdf(pdf_path)
-                results[filename] = chunks
+                results[filename] = chunks # results is a dictionary that maps the filename to the chunks
                 print(f"✅ Successfully processed {filename}: {len(chunks)} chunks")
-                
+                # If the processing is successful, print a success message
             except Exception as e:
                 error_msg = f"ERROR: {str(e)}"
                 results[filename] = [error_msg]
@@ -176,6 +191,7 @@ class DocumentProcessor:
         
         return results
     
+    # Get statistics about the processing results
     def get_processing_stats(self, results: Dict[str, List[str]]) -> Dict[str, any]:
         """
         Get statistics about the processing results.
@@ -186,14 +202,14 @@ class DocumentProcessor:
         Returns:
             Dict[str, any]: Statistics about processing
         """
-        stats = {
+        stats = { # stats is a dictionary that contains the statistics about the processing results
             "total_files": len(results),
             "successful_files": 0,
             "failed_files": 0,
             "total_chunks": 0,
             "average_chunks_per_file": 0
         }
-        
+        # Calculate the statistics about the processing results
         for filename, chunks in results.items():
             if chunks and not (isinstance(chunks[0], str) and chunks[0].startswith("ERROR:")):
                 stats["successful_files"] += 1
