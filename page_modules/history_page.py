@@ -6,6 +6,8 @@ Function-based approach for the conversation history page.
 import streamlit as st
 from ui_components import render_back_button
 
+# Rendering is the process of displaying the content on the screen
+# Render the conversation history page
 def render_history_page(conversation_buffer):
     """Render the conversation history page."""
     st.title("💬 Conversation History")
@@ -22,10 +24,12 @@ def render_history_page(conversation_buffer):
     else:
         _render_no_history(conversation_buffer)
 
+# Render the conversation history for a session
 def _render_conversation_history(conversation_buffer, session_id):
     """Render the conversation history for a session."""
     st.markdown("### 📝 Recent Conversations")
     
+    # Show the conversation history
     for i, interaction in enumerate(conversation_buffer.conversations[session_id], 1):
         with st.expander(f"Conversation {i} - {interaction['timestamp'][:19]}"):
             st.markdown(f"**👤 You:** {interaction['user_message']}")
@@ -47,18 +51,20 @@ def _render_conversation_history(conversation_buffer, session_id):
     st.markdown("---")
     st.markdown("### 🎯 What would you like to do next?")
     
+    # Add navigation buttons
     col1, col2 = st.columns(2)
-    
+    # Ask Questions button
     with col1:
         if st.button("❓ Ask Questions", use_container_width=True, key="history_ask_questions"):
             st.session_state.current_page = "qa"
             st.rerun()
-    
+    # Generate Quiz button
     with col2:
         if st.button("📝 Generate Quiz", use_container_width=True, key="history_generate_quiz"):
             st.session_state.current_page = "quiz"
             st.rerun()
 
+# Render the conversation summary
 def _render_conversation_summary(conversation_buffer, session_id):
     """Render the conversation summary."""
     summary = conversation_buffer.get_conversation_summary(session_id)
@@ -68,7 +74,8 @@ def _render_conversation_summary(conversation_buffer, session_id):
         st.info(f"**Total Interactions:** {summary['total_interactions']}")
         if summary['documents_referenced']:
             st.info(f"**Documents Referenced:** {', '.join(summary['documents_referenced'])}")
-
+            
+# Render the clear history button
 def _render_clear_history_button(conversation_buffer, session_id):
     """Render the clear history button."""
     if st.button("🗑️ Clear Conversation History", key="history_clear"):
