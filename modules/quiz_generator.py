@@ -11,7 +11,7 @@ import re
 import json
 import os
 
-
+# Quiz Generator Class for generating quizzes and questions
 class QuizGenerator:
     """
     Handles Q&A operations and quiz generation using LLM integration.
@@ -24,9 +24,10 @@ class QuizGenerator:
         Args:
             llm_model (str): Model to use for generation (for OpenAI compatibility)
         """
+        # Initialize the LLM model
         self.llm_model = llm_model
         
-        # Initialize AI provider manager
+        # Initialize the AI provider manager
         self.ai_manager = AIProviderManager()
         
         # Get current provider info
@@ -60,6 +61,7 @@ class QuizGenerator:
             }
         }
     
+    # Answer a user question using hybrid search and LLM generation
     def answer_question(self, 
                        question: str, 
                        filename: Optional[str] = None, 
@@ -80,7 +82,7 @@ class QuizGenerator:
         print(f"[DEBUG] Question: {question}")
         print(f"[DEBUG] Using hybrid search: {use_hybrid}")
         print(f"[DEBUG] AI provider available: {bool(self.ai_manager.get_current_provider())}")
-        
+        # If use_hybrid is True, use hybrid search for better results
         if use_hybrid:
             # Use hybrid search for better results
             try:
@@ -120,6 +122,7 @@ class QuizGenerator:
         # Use LLM to generate a clean answer from the context
         return self.generate_llm_answer(question, formatted_results)
     
+    # Generate a clean, concise answer using LLM from retrieved context
     def generate_llm_answer(self, question: str, context_results: List[Dict]) -> str:
         """
         Generate a clean, concise answer using LLM from retrieved context.
@@ -145,6 +148,7 @@ class QuizGenerator:
         print(f"[DEBUG] First 200 chars of context: {context_text[:200]}...")
         
         print(f"[DEBUG] About to call AI provider...")
+        # Try to generate an answer using the AI provider
         try:
             answer = self.ai_manager.generate_answer(question, context_text)
             print(f"[DEBUG] AI provider response received: {answer[:100]}...")
@@ -157,6 +161,8 @@ class QuizGenerator:
             print(f"[DEBUG] Using fallback answer: {fallback_answer[:100]}...")
             return fallback_answer
     
+
+    # Generate a single question using LLM based on the given context and type
     def generate_llm_question(self, context: str, question_type: str) -> Dict:
         """
         Generate a single question using LLM based on the given context and type.
@@ -173,6 +179,7 @@ class QuizGenerator:
         
         template = self.question_types.get(question_type, self.question_types["multiple_choice"])
         
+        # Generate a prompt for the LLM to generate a question
         prompt = f"""
         Based on the following text context, {template['prompt']}
         
@@ -188,7 +195,7 @@ class QuizGenerator:
         
         Format your response with clear sections for Question, Options (if multiple choice), Answer, Explanation, and Page Reference.
         """
-        
+        # Try to generate a question using the AI provider
         try:
             # Use AI provider to generate question
             result = self.ai_manager.generate_quiz_question(context, question_type)
@@ -204,6 +211,7 @@ class QuizGenerator:
         except Exception as e:
             return self.generate_fallback_question(context, question_type)
     
+    # Parse multiple choice question from LLM response
     def parse_multiple_choice(self, text: str, context: str) -> Dict:
         """Parse multiple choice question from LLM response."""
         try:
@@ -242,6 +250,7 @@ class QuizGenerator:
         except Exception as e:
             return self.generate_fallback_question(context, "multiple_choice")
     
+    # Parse true/false question from LLM response
     def parse_true_false(self, text: str, context: str) -> Dict:
         """Parse true/false question from LLM response."""
         try:
@@ -270,6 +279,7 @@ class QuizGenerator:
         except Exception as e:
             return self.generate_fallback_question(context, "true_false")
     
+    # Parse short answer question from LLM response
     def parse_short_answer(self, text: str, context: str, question_type: str) -> Dict:
         """Parse short answer question from LLM response."""
         try:
@@ -298,6 +308,7 @@ class QuizGenerator:
         except Exception as e:
             return self.generate_fallback_question(context, question_type)
     
+    # Generate an advanced quiz using LLM with multiple question types
     def generate_advanced_quiz(self, 
                               filename: str, 
                               num_questions: int = 5, 
@@ -329,7 +340,7 @@ class QuizGenerator:
             question_types = list(self.question_types.keys())
         
         quiz_questions = []
-        
+        # Generate questions for the quiz
         for i in range(num_questions):
             # Select random context chunk
             context_chunk = random.choice(results)["document"]
@@ -345,6 +356,7 @@ class QuizGenerator:
         
         return quiz_questions
     
+    # Generate a simple fallback question when LLM fails
     def generate_fallback_question(self, context: str, question_type: str) -> Dict:
         """Generate a simple fallback question when LLM fails."""
         if question_type == "multiple_choice":
@@ -381,6 +393,7 @@ class QuizGenerator:
                 "context": context[:200] + "..."
             }
     
+    # Generate a quiz using LLM with multiple question types
     def generate_quiz(self, filename: str, num_questions: int = 5) -> List[Dict]:
         """
         Generate a quiz (wrapper for advanced quiz generation).
