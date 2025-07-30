@@ -8,6 +8,7 @@ import tempfile
 import os
 from ui_components import render_delete_popup
 
+# Upload Page Class for handling the document upload and processing functionality
 class UploadPage:
     """Handles the document upload page functionality."""
     
@@ -37,6 +38,7 @@ class UploadPage:
             # Navigation buttons
             st.markdown("### 🎯 What would you like to do next?")
             
+            # Add navigation buttons
             col1, col2, col3 = st.columns(3)
             
             with col1:
@@ -54,9 +56,10 @@ class UploadPage:
                     st.session_state.current_page = "history"
                     st.rerun()
     
+    # Render the file upload section
     def _render_file_upload(self):
         """Render the file upload section."""
-        uploaded_file = st.file_uploader(
+        uploaded_file = st.file_uploader( #file_uploader is a function that allows the user to upload a file
             "Choose a PDF file or drag and drop here",
             type=['pdf'],
             key="main_uploader",
@@ -70,6 +73,7 @@ class UploadPage:
             if st.button("🚀 Process Document", use_container_width=True, key="process_main"):
                 self._process_uploaded_file(uploaded_file)
     
+    # Process the uploaded PDF file
     def _process_uploaded_file(self, uploaded_file):
         """Process the uploaded PDF file."""
         with st.spinner("Processing PDF..."):
@@ -106,6 +110,7 @@ class UploadPage:
             # Clean up temporary file
             os.unlink(tmp_path)
     
+    # Render the existing documents section
     def _render_existing_documents(self):
         """Render the existing documents section."""
         doc_list = self.vector_store.list_documents()
