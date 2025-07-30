@@ -43,7 +43,7 @@ A powerful, AI application that transforms your PDF documents into intelligent, 
 - **Ollama** - Local large language models (LLM)
 - **OpenAI API** - Cloud-based AI (optional)
 - **Sentence Transformers** - Text embeddings and similarity
-- **ChromaDB** - Vector database for document storage
+- **ChromaDB** - Vector database for document storage and semantic search
 - **Hybrid Search** - BM25 + semantic search combination
 
 ### **Document Processing**
@@ -52,7 +52,8 @@ A powerful, AI application that transforms your PDF documents into intelligent, 
 - **Text Preprocessing** - Clean and optimize document content
 
 ### **Data Management**
-- **Vector Storage** - Efficient document indexing
+- **ChromaDB Vector Database** - High-performance vector storage for document embeddings
+- **Vector Storage** - Efficient document indexing and similarity search
 - **Conversation Buffer** - Session and history management
 - **Session State** - User session persistence
 
@@ -101,18 +102,24 @@ That's it! Open your browser and start uploading documents.
 
 ### **Document Processing Pipeline**
 ```
-📄 PDF Upload → 🔍 Text Extraction → 📝 Smart Chunking → 🗄️ Vector Storage → 🤖 AI Ready
+📄 PDF Upload → 🔍 Text Extraction → 📝 Smart Chunking → 🗄️ ChromaDB Vector Storage → 🤖 AI Ready
 ```
 
 ### **Q&A Workflow**
 ```
-❓ User Question → 🔍 Hybrid Search → 📄 Context Retrieval → 🤖 AI Generation → 💬 Answer
+❓ User Question → 🔍 Hybrid Search (BM25 + ChromaDB) → 📄 Context Retrieval → 🤖 AI Generation → 💬 Answer
 ```
 
 ### **Quiz Generation Process**
 ```
 📚 Document Content → 🧠 AI Analysis → 📝 Question Creation → 🎯 Quiz Assembly → 📊 Interactive Quiz
 ```
+
+### **ChromaDB Vector Database**
+- **Document Embeddings** - Converts text chunks into high-dimensional vectors
+- **Similarity Search** - Finds most relevant document sections using semantic similarity
+- **Persistent Storage** - Stores embeddings locally for fast retrieval
+- **Real-time Indexing** - Updates search index as new documents are added
 
 ## 🔧 **Configuration Options**
 
@@ -128,10 +135,11 @@ That's it! Open your browser and start uploading documents.
 - **Custom Models** - Add your own Ollama models
 
 ### **Search Configuration**
-- **Hybrid Search** - Combines keyword and semantic search
-- **Keyword Search** - Exact term matching
-- **Semantic Search** - Meaning-based matching
-- **Customizable Weights** - Adjust search strategy
+- **ChromaDB Vector Search** - High-performance semantic similarity search
+- **Hybrid Search** - Combines keyword (BM25) and semantic (ChromaDB) search
+- **Keyword Search** - Exact term matching with BM25 algorithm
+- **Semantic Search** - Meaning-based matching using ChromaDB embeddings
+- **Customizable Weights** - Adjust search strategy between keyword and semantic
 
 ## 📁 **Project Structure**
 
@@ -148,8 +156,8 @@ radical_ai/
 ├── modules/                   # Core AI and processing logic
 │   ├── ai_provider.py        #  AI provider management
 │   ├── document_processor.py #  PDF processing
-│   ├── vector_store.py       #  Document storage
-│   ├── hybrid_search.py      #  Intelligent search
+│   ├── vector_store.py       #  ChromaDB document storage
+│   ├── hybrid_search.py      #  Intelligent search (BM25 + ChromaDB)
 │   ├── quiz_generator.py     #  Quiz generation
 │   └── conversation_buffer.py # Conversation memory
 ├── static/                   #  Styling and assets
@@ -314,8 +322,8 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 - **Ollama** - For providing local AI capabilities
 - **Streamlit** - For the excellent web framework
-- **ChromaDB** - For vector storage solutions
-- **Sentence Transformers** - For text embeddings
+- **ChromaDB** - For high-performance vector database and semantic search
+- **Sentence Transformers** - For text embeddings and similarity
 - **OpenAI** - For cloud AI integration
 
 ---
