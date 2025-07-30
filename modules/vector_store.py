@@ -10,13 +10,13 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import os
 
-
+## Vector Store Class for managing ChromaDB operations, embeddings, and document storage
 class VectorStore:
     """
     Manages ChromaDB operations, embeddings, and document storage.
     """
     
-    def __init__(self, 
+    def __init__(self,  # Initialize the VectorStore
                  persist_directory: str = "./chroma_db",
                  embedding_model: str = "all-MiniLM-L6-v2",
                  collection_name: str = "documents"):
@@ -52,6 +52,7 @@ class VectorStore:
             print(f"❌ Failed to load embedding model: {e}")
             raise
     
+    # Add a document's text chunks and their embeddings to the vector store
     def add_document(self, filename: str, chunks: List[str], batch_size: int = 256) -> bool:
         """
         Add a document's text chunks and their embeddings to the vector store.
@@ -74,8 +75,8 @@ class VectorStore:
             print(f"Warning: No valid text chunks to embed for {filename}.")
             return False
 
-        all_embeddings = []
-        successful_chunks = []
+        all_embeddings = [] # all_embeddings is a list that contains the embeddings of the chunks
+        successful_chunks = [] # successful_chunks is a list that contains the chunks that were successfully embedded
 
         # Process chunks in batches
         for i in range(0, len(valid_chunks), batch_size):
@@ -85,12 +86,12 @@ class VectorStore:
             batch = [b for b in batch if isinstance(b, str) and b.strip()]
             if not batch:
                 continue
-
+            # Try to embed the chunks
             try:
                 batch_embeddings = self.embedder.encode(batch, show_progress_bar=False)
                 all_embeddings.extend(batch_embeddings.tolist())
                 successful_chunks.extend(batch)
-
+            # If the embedding fails, print a warning message
             except Exception as e:
                 print(f"Warning: Failed to embed batch {i}-{i+batch_size}: {e}")
                 continue
@@ -128,6 +129,7 @@ class VectorStore:
             print(f"❌ Failed to add document to vector store: {e}")
             return False
     
+    # Query the vector store for similar chunks
     def query_similar_chunks(self, 
                            query: str, 
                            n_results: int = 5, 
@@ -170,6 +172,7 @@ class VectorStore:
             print(f"❌ Query failed: {e}")
             return []
     
+    # Get list of all documents in the vector store
     def list_documents(self) -> List[str]:
         """
         Get list of all documents in the vector store.
@@ -196,6 +199,7 @@ class VectorStore:
             print(f"❌ Failed to list documents: {e}")
             return []
     
+    # Delete a document and all its chunks from the vector store
     def delete_document(self, filename: str) -> bool:
         """
         Delete a document and all its chunks from the vector store.
@@ -224,6 +228,7 @@ class VectorStore:
             print(f"❌ Failed to delete document: {e}")
             return False
     
+    # Get statistics about a specific document
     def get_document_stats(self, filename: str) -> Dict[str, Any]:
         """
         Get statistics about a specific document.
@@ -255,6 +260,7 @@ class VectorStore:
             print(f"❌ Failed to get document stats: {e}")
             return {"filename": filename, "error": str(e)}
     
+    # Get overall statistics about the vector store
     def get_collection_stats(self) -> Dict[str, Any]:
         """
         Get overall statistics about the vector store.
@@ -278,6 +284,7 @@ class VectorStore:
             print(f"❌ Failed to get collection stats: {e}")
             return {"error": str(e)}
     
+    # Refresh the vector store
     def refresh_vector_store(self) -> bool:
         """
         Refresh the vector store (reload collection).
@@ -293,6 +300,7 @@ class VectorStore:
             print(f"❌ Failed to refresh vector store: {e}")
             return False
     
+    # Clear all data from the vector store
     def clear_vector_store(self) -> bool:
         """
         Clear all data from the vector store.
@@ -309,6 +317,7 @@ class VectorStore:
             print(f"❌ Failed to clear vector store: {e}")
             return False
     
+    # Get all chunks for a specific document
     def get_document_chunks(self, filename: str) -> List[str]:
         """
         Get all chunks for a specific document.
