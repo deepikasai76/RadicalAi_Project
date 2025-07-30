@@ -7,6 +7,7 @@ import streamlit as st
 from datetime import datetime
 from ui_components import render_back_button
 
+# Render the Q&A page
 def render_qa_page(vector_store, quiz_generator, conversation_buffer):
     """Render the Q&A page."""
     st.title("❓ Q&A Interface")
@@ -14,14 +15,15 @@ def render_qa_page(vector_store, quiz_generator, conversation_buffer):
     # Navigation buttons row
     col1, col2, col3 = st.columns(3)
     
+    # Back button
     with col1:
         render_back_button()
-    
+    # Generate Quiz button
     with col2:
         if st.button("📝 Generate Quiz", use_container_width=True, key="qa_generate_quiz"):
             st.session_state.current_page = "quiz"
             st.rerun()
-    
+    # View History button
     with col3:
         if st.button("💬 View History", use_container_width=True, key="qa_view_history"):
             st.session_state.current_page = "history"
@@ -39,7 +41,7 @@ def render_qa_page(vector_store, quiz_generator, conversation_buffer):
         
         # Q&A Section
         st.subheader("Ask a Question")
-        
+        # Q&A Section
         col1, col2 = st.columns([3, 1])
         with col1:
             user_question = st.text_input("Type your question about the document:")
@@ -49,6 +51,7 @@ def render_qa_page(vector_store, quiz_generator, conversation_buffer):
         if st.button("Get Answer", key="qa_get_answer") and user_question:
             _process_question(user_question, selected_doc, use_hybrid, quiz_generator, conversation_buffer)
 
+# Process a user question and generate an answer
 def _process_question(user_question, selected_doc, use_hybrid, quiz_generator, conversation_buffer):
     """Process a user question and generate an answer."""
     with st.spinner("Searching with hybrid search..." if use_hybrid else "Searching..."):
@@ -64,6 +67,7 @@ def _process_question(user_question, selected_doc, use_hybrid, quiz_generator, c
         if conversation_context:
             enhanced_question = f"Previous conversation context:\n{conversation_context}\n\nCurrent question: {user_question}"
         
+        # Generate an answer using the quiz generator
         answer = quiz_generator.answer_question(enhanced_question, filename=selected_doc, use_hybrid=use_hybrid)
         
         # Store the interaction in conversation buffer
