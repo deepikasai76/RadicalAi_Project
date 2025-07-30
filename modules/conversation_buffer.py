@@ -1,14 +1,14 @@
 """
 conversation_buffer.py
 
-Provides conversation memory and context management for the Radical AI app.
+Provides conversation memory and context management for the Document Q&A and quiz generation.
 """
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 import json
 import uuid
 
-
+## Conversation Buffer Class for managing conversation history and context
 class ConversationBuffer:
     """
     Manages conversation history and context for better AI interactions.
@@ -26,6 +26,7 @@ class ConversationBuffer:
         self.max_tokens = max_tokens
         self.conversations = {}  # Store multiple conversations by session_id
     
+    # Add a new interaction to the conversation buffer
     def add_interaction(self, 
                        session_id: str, 
                        user_message: str, 
@@ -44,7 +45,7 @@ class ConversationBuffer:
         """
         if session_id not in self.conversations:
             self.conversations[session_id] = []
-        
+        # Create a new interaction dictionary
         interaction = {
             "id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
@@ -61,6 +62,7 @@ class ConversationBuffer:
         if len(self.conversations[session_id]) > self.max_history:
             self.conversations[session_id] = self.conversations[session_id][-self.max_history:]
     
+    # Get conversation context for AI processing
     def get_conversation_context(self, 
                                 session_id: str, 
                                 include_context: bool = True,
@@ -78,7 +80,7 @@ class ConversationBuffer:
         """
         if session_id not in self.conversations:
             return ""
-        
+        # Get the last max_interactions interactions
         conversation = self.conversations[session_id][-max_interactions:]
         context_parts = []
         
@@ -94,6 +96,7 @@ class ConversationBuffer:
         
         return "\n\n".join(context_parts)
     
+    # Get recent conversation interactions for context
     def get_recent_context(self, 
                           session_id: str, 
                           num_interactions: int = 3) -> List[Dict[str, Any]]:
@@ -112,6 +115,7 @@ class ConversationBuffer:
         
         return self.conversations[session_id][-num_interactions:]
     
+    # Get a summary of the conversation
     def get_conversation_summary(self, session_id: str) -> Dict[str, Any]:
         """
         Get a summary of the conversation.
@@ -144,10 +148,10 @@ class ConversationBuffer:
                 "documents_referenced": set()
             }
         
-        # Extract metadata
+        # Extract metadata from the conversation interactions 
         documents_referenced = set()
         for interaction in conversation:
-            if 'metadata' in interaction and 'document_name' in interaction['metadata']:
+            if 'metadata' in interaction and 'document_name' in interaction['metadata']: #metadata is a dictionary that contains the document name
                 documents_referenced.add(interaction['metadata']['document_name'])
         
         return {
@@ -159,6 +163,7 @@ class ConversationBuffer:
             "documents_referenced": list(documents_referenced)
         }
     
+    # Clear a specific conversation
     def clear_conversation(self, session_id: str) -> None:
         """
         Clear a specific conversation.
@@ -169,6 +174,7 @@ class ConversationBuffer:
         if session_id in self.conversations:
             del self.conversations[session_id]
     
+    # Clear all conversations
     def clear_all_conversations(self) -> None:
         """Clear all conversations."""
         self.conversations.clear()
@@ -182,6 +188,7 @@ class ConversationBuffer:
         """
         return list(self.conversations.keys())
     
+    # Export a conversation to a specific format
     def export_conversation(self, session_id: str, format: str = "json") -> str:
         """
         Export a conversation to a specific format.
@@ -247,12 +254,12 @@ class ConversationBuffer:
         
         return matches
 
-
 # Global instance for easy access
-conversation_buffer = ConversationBuffer()
-
+# this is a global instance of the ConversationBuffer class
+conversation_buffer = ConversationBuffer() 
 
 # Helper functions for backward compatibility
+## Backward compatible means your changes don’t break or negatively affect the existing functionality
 def add_interaction(session_id: str, user_message: str, ai_response: str, 
                    context_chunks: List[str] = None, metadata: Dict[str, Any] = None) -> None:
     """Backward compatibility function."""
