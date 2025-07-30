@@ -24,6 +24,7 @@ from page_modules.qa_page import render_qa_page
 from page_modules.quiz_page import QuizPage
 from page_modules.history_page import render_history_page
 
+# Main application function
 def main():
     """Main application function."""
     # Load custom CSS
@@ -42,6 +43,7 @@ def main():
     # Page routing
     current_page = st.session_state.current_page
     
+    # Upload Page
     if current_page == "upload":
         # Class-based approach
         upload_page = UploadPage(instances['vector_store'], instances['document_processor'])
@@ -64,5 +66,6 @@ def main():
         # Function-based approach
         render_history_page(instances['conversation_buffer'])
 
+# Run the main application
 if __name__ == "__main__":
     main() 
