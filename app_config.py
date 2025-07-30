@@ -23,6 +23,7 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Cache class instances to prevent reloading
 @st.cache_resource
 def get_instances():
     """Cache class instances to prevent reloading."""
@@ -33,6 +34,8 @@ def get_instances():
         'conversation_buffer': ConversationBuffer()
     }
 
+# Initialize Streamlit session state variables
+# Session state is a way to store data that persists across page reloads
 def initialize_session_state():
     """Initialize Streamlit session state variables."""
     if 'session_id' not in st.session_state:
@@ -46,6 +49,7 @@ def initialize_session_state():
     if 'processed_filename' not in st.session_state:
         st.session_state.processed_filename = ""
 
+# Get cached app instances
 def get_app_instances():
     """Get cached app instances."""
     instances = get_instances()
@@ -57,6 +61,7 @@ def get_app_instances():
         'openai_client': client
     }
 
+# Check if OpenAI API key is configured
 def check_api_key():
     """Check if OpenAI API key is configured."""
     if client.api_key:
