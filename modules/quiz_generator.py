@@ -5,10 +5,9 @@ Provides advanced Q&A and LLM-powered quiz generation functionality using a clas
 """
 from typing import List, Dict, Optional
 from .vector_store import query_similar_chunks
+from .ai_provider import AIProviderManager
 import random
 import re
-import openai
-from openai import OpenAI
 import json
 import os
 
@@ -23,21 +22,19 @@ class QuizGenerator:
         Initialize the QuizGenerator.
         
         Args:
-            llm_model (str): OpenAI model to use for generation
+            llm_model (str): Model to use for generation (for OpenAI compatibility)
         """
         self.llm_model = llm_model
         
-        # Initialize OpenAI client with error handling
-        try:
-            api_key = os.getenv("OPENAI_API_KEY")
-            if api_key:
-                self.client = OpenAI(api_key=api_key)
-            else:
-                self.client = None
-                print("⚠️ OpenAI API key not found - LLM features will use fallbacks")
-        except Exception as e:
-            self.client = None
-            print(f"⚠️ Failed to initialize OpenAI client: {e}")
+        # Initialize AI provider manager
+        self.ai_manager = AIProviderManager()
+        
+        # Get current provider info
+        current_provider = self.ai_manager.get_current_provider()
+        if current_provider:
+            print(f"✅ Using AI provider: {self.ai_manager.current_provider}")
+        else:
+            print("⚠️ No AI providers available - LLM features will use fallbacks")
         
         # Question type templates
         self.question_types = {
@@ -82,7 +79,7 @@ class QuizGenerator:
         """
         print(f"[DEBUG] Question: {question}")
         print(f"[DEBUG] Using hybrid search: {use_hybrid}")
-        print(f"[DEBUG] OpenAI API key configured: {bool(self.client and self.client.api_key)}")
+        print(f"[DEBUG] AI provider available: {bool(self.ai_manager.get_current_provider())}")
         
         if use_hybrid:
             # Use hybrid search for better results
@@ -135,11 +132,11 @@ class QuizGenerator:
             str: Generated answer
         """
         print(f"[DEBUG] generate_llm_answer called with {len(context_results)} context chunks")
-        print(f"[DEBUG] OpenAI API key available: {bool(self.client and self.client.api_key)}")
+        print(f"[DEBUG] AI provider available: {bool(self.ai_manager.get_current_provider())}")
         
-        if not self.client or not self.client.api_key:
-            print("[DEBUG] No OpenAI API key found - using fallback")
-            # Fallback to simple answer if no API key
+        if not self.ai_manager.get_current_provider():
+            print("[DEBUG] No AI provider available - using fallback")
+            # Fallback to simple answer if no AI provider
             return context_results[0]["document"][:500] + "..."
         
         # Prepare context from top results
@@ -147,40 +144,15 @@ class QuizGenerator:
         print(f"[DEBUG] Context text length: {len(context_text)} characters")
         print(f"[DEBUG] First 200 chars of context: {context_text[:200]}...")
         
-        prompt = f"""
-        Based on the following context, provide a clear and concise answer to the question.
-        
-        Question: {question}
-        
-        Context:
-        {context_text}
-        
-        Instructions:
-        - Provide a direct, accurate answer
-        - Keep it concise (2-3 sentences maximum)
-        - Use clear, simple language
-        - If the context doesn't contain enough information, say so
-        """
-        
-        print(f"[DEBUG] About to call OpenAI API...")
+        print(f"[DEBUG] About to call AI provider...")
         try:
-            response = self.client.chat.completions.create(
-                model=self.llm_model,
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant that provides clear, concise answers based on given context."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                max_tokens=200
-            )
-            
-            answer = response.choices[0].message.content.strip()
-            print(f"[DEBUG] LLM response received: {answer[:100]}...")
+            answer = self.ai_manager.generate_answer(question, context_text)
+            print(f"[DEBUG] AI provider response received: {answer[:100]}...")
             return answer
 
         except Exception as e:
-            print(f"[DEBUG] LLM call failed with error: {e}")
-            # Fallback to simple answer if LLM fails
+            print(f"[DEBUG] AI provider call failed with error: {e}")
+            # Fallback to simple answer if AI provider fails
             fallback_answer = context_results[0]["document"][:300] + "..."
             print(f"[DEBUG] Using fallback answer: {fallback_answer[:100]}...")
             return fallback_answer
@@ -196,8 +168,8 @@ class QuizGenerator:
         Returns:
             Dict: Generated question with metadata
         """
-        if not self.client or not self.client.api_key:
-            return {"error": "OpenAI API key not configured"}
+        if not self.ai_manager.get_current_provider():
+            return {"error": "No AI provider configured"}
         
         template = self.question_types.get(question_type, self.question_types["multiple_choice"])
         
@@ -218,25 +190,16 @@ class QuizGenerator:
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model=self.llm_model,
-                messages=[
-                    {"role": "system", "content": "You are an expert educator creating quiz questions. Generate clear, accurate, and engaging questions with detailed explanations and page references."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=400
-            )
+            # Use AI provider to generate question
+            result = self.ai_manager.generate_quiz_question(context, question_type)
             
-            question_text = response.choices[0].message.content
+            # Check if the result is valid
+            if "error" in result:
+                return self.generate_fallback_question(context, question_type)
             
-            # Parse the response based on question type
-            if question_type == "multiple_choice":
-                return self.parse_multiple_choice(question_text, context)
-            elif question_type == "true_false":
-                return self.parse_true_false(question_text, context)
-            else:
-                return self.parse_short_answer(question_text, context, question_type)
+            # Add context to the result
+            result["context"] = context[:200] + "..."
+            return result
                 
         except Exception as e:
             return self.generate_fallback_question(context, question_type)
