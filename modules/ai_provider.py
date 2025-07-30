@@ -1,6 +1,8 @@
 """
+
 AI Provider Module
 Supports multiple AI providers with a unified interface.
+
 """
 
 import os
@@ -10,27 +12,28 @@ from typing import List, Dict, Optional, Any
 from abc import ABC, abstractmethod
 import time
 
+## AI Provider Abstract Base Class
 class AIProvider(ABC):
     """Abstract base class for AI providers."""
-    
-    @abstractmethod
+    # Generate an answer based on question and context
+    @abstractmethod # Abstract method is used to enforce that all subclasses must implement this method
     def generate_answer(self, question: str, context: str) -> str:
         """Generate an answer based on question and context."""
         pass
-    
+    # Generate a quiz question based on context and type
     @abstractmethod
     def generate_quiz_question(self, context: str, question_type: str) -> Dict:
         """Generate a quiz question based on context and type."""
         pass
-    
+    # Check if the provider is available
     @abstractmethod
     def is_available(self) -> bool:
         """Check if the provider is available."""
         pass
-
+# Ollama Provider Class
 class OllamaProvider(AIProvider):
     """Ollama local AI provider."""
-    
+    # Initialize the Ollama provider
     def __init__(self, model_name: str = "gemma3:latest", base_url: str = "http://localhost:11434"):
         self.model_name = model_name
         self.base_url = base_url
@@ -54,7 +57,7 @@ class OllamaProvider(AIProvider):
             return False
         except:
             return False
-    
+    # Get list of available models
     def get_available_models(self) -> List[str]:
         """Get list of available models."""
         try:
@@ -65,7 +68,8 @@ class OllamaProvider(AIProvider):
             return []
         except:
             return []
-    
+   
+    # Generate an answer using Ollama
     def generate_answer(self, question: str, context: str) -> str:
         """Generate an answer using Ollama."""
         if not self.is_available():
@@ -79,13 +83,14 @@ class OllamaProvider(AIProvider):
         max_context_length = 2000
         if len(context) > max_context_length:
             context = context[:max_context_length] + "..."
-        
+
+        # Generate a prompt for the Ollama model
         prompt = f"""Context: {context}
 
 Question: {question}
 
 Answer briefly (2-3 sentences):"""
-        
+        # Send the prompt to the Ollama model
         try:
             response = self.session.post(
                 f"{self.base_url}/api/generate",
@@ -101,13 +106,13 @@ Answer briefly (2-3 sentences):"""
                 },
                 timeout=120
             )
-            
+            # Check if the response is successful
             if response.status_code == 200:
                 result = response.json()
                 return result.get("response", "No response generated").strip()
             else:
                 return f"Error: {response.status_code} - {response.text}"
-                
+             # If the response is not successful, return an error message
         except requests.exceptions.Timeout:
             return "Request timed out. The model is taking longer than expected to respond. Please try again or use a shorter question."
         except requests.exceptions.ConnectionError:
@@ -115,6 +120,7 @@ Answer briefly (2-3 sentences):"""
         except Exception as e:
             return f"Error generating answer: {str(e)}"
     
+    # Generate a quiz question using Ollama
     def generate_quiz_question(self, context: str, question_type: str) -> Dict:
         """Generate a quiz question using Ollama."""
         if not self.is_available():
@@ -161,7 +167,7 @@ Create a short answer question. Respond with JSON:
         
         template = templates.get(question_type, templates["multiple_choice"])
         prompt = template.format(context=context)
-        
+        # Send the prompt to the Ollama model
         try:
             response = self.session.post(
                 f"{self.base_url}/api/generate",
@@ -177,7 +183,7 @@ Create a short answer question. Respond with JSON:
                 },
                 timeout=120
             )
-            
+            # Check if the response is successful
             if response.status_code == 200:
                 result = response.json()
                 response_text = result.get("response", "").strip()
@@ -196,7 +202,7 @@ Create a short answer question. Respond with JSON:
                     return {"error": "Failed to parse response", "raw_response": response_text}
             else:
                 return {"error": f"HTTP {response.status_code}"}
-                
+        # If the response is not successful, return an error message
         except requests.exceptions.Timeout:
             return {"error": "Request timed out. The model is taking longer than expected to respond. Please try again or use a shorter question."}
         except requests.exceptions.ConnectionError:
@@ -204,6 +210,7 @@ Create a short answer question. Respond with JSON:
         except Exception as e:
             return {"error": f"Error generating question: {str(e)}"}
 
+# OpenAI Provider Class
 class OpenAIProvider(AIProvider):
     """OpenAI API provider."""
     
@@ -222,12 +229,12 @@ class OpenAIProvider(AIProvider):
     def is_available(self) -> bool:
         """Check if OpenAI is available."""
         return self.client is not None and self.api_key is not None
-    
+
     def generate_answer(self, question: str, context: str) -> str:
         """Generate an answer using OpenAI."""
         if not self.is_available():
             return "OpenAI API key not configured"
-        
+        # Send the prompt to the OpenAI model
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -245,14 +252,16 @@ class OpenAIProvider(AIProvider):
                 temperature=0.7
             )
             return response.choices[0].message.content.strip()
+        # If the response is not successful, return an error message
         except Exception as e:
             return f"Error generating answer: {str(e)}"
     
+    # Generate a quiz question using OpenAI
     def generate_quiz_question(self, context: str, question_type: str) -> Dict:
         """Generate a quiz question using OpenAI."""
         if not self.is_available():
             return {"error": "OpenAI API key not configured"}
-        
+        # Define question type templates
         templates = {
             "multiple_choice": """Create a multiple choice question with 4 options (A, B, C, D) where only one is correct.
 
@@ -302,7 +311,7 @@ Return a JSON object with this structure:
         
         template = templates.get(question_type, templates["multiple_choice"])
         prompt = template.format(context=context)
-        
+        # Send the prompt to the OpenAI model
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -330,6 +339,7 @@ Return a JSON object with this structure:
         except Exception as e:
             return {"error": f"Error generating question: {str(e)}"}
 
+# AI Provider Manager Class
 class AIProviderManager:
     """Manages multiple AI providers with fallback support."""
     
@@ -367,7 +377,7 @@ class AIProviderManager:
                 print("⚠️ Ollama server not available")
         
         # Try OpenAI as fallback
-        openai_provider = OpenAIProvider()
+        openai_provider = OpenAIProvider() # Initialize the OpenAI provider
         if openai_provider.is_available():
             self.providers["openai"] = openai_provider
             if not self.current_provider:
@@ -377,6 +387,7 @@ class AIProviderManager:
         if not self.current_provider:
             print("⚠️ No AI providers available")
     
+    # Set the current provider
     def set_provider(self, provider_name: str) -> bool:
         """Set the current provider."""
         if provider_name in self.providers:
@@ -384,6 +395,7 @@ class AIProviderManager:
             return True
         return False
     
+    # Get the current provider
     def get_current_provider(self) -> Optional[AIProvider]:
         """Get the current provider."""
         if self.current_provider:
@@ -408,15 +420,17 @@ class AIProviderManager:
             return provider.generate_quiz_question(context, question_type)
         return {"error": "No AI provider available"}
     
+    # Test a specific provider
     def test_provider(self, provider_name: str) -> Dict:
         """Test a specific provider."""
         if provider_name not in self.providers:
             return {"error": f"Provider {provider_name} not available"}
         
+        # Test the provider by generating an answer
         provider = self.providers[provider_name]
         test_context = "The Earth is the third planet from the Sun."
         test_question = "What is the Earth's position from the Sun?"
-        
+        # Test the provider by generating a quiz question
         try:
             answer = provider.generate_answer(test_question, test_context)
             return {
