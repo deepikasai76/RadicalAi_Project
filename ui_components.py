@@ -7,6 +7,8 @@ import os
 import streamlit as st
 import tempfile
 
+# Render the sidebar with configuration and document management
+# Sidebar is a container that contains the configuration and document management
 def render_sidebar(vector_store, conversation_buffer):
     """Render the sidebar with configuration and document management."""
     with st.sidebar:
@@ -21,6 +23,7 @@ def render_sidebar(vector_store, conversation_buffer):
         ai_manager = AIProviderManager()
         available_providers = ai_manager.get_available_providers()
         
+        # If there are available providers, show the provider selection dropdown
         if available_providers:
             selected_provider = st.selectbox(
                 "Choose AI Provider:",
@@ -135,6 +138,7 @@ def render_sidebar(vector_store, conversation_buffer):
         except:
             st.metric("🔍 Vector Store", "Ready")
 
+# Render the delete confirmation popup
 def render_delete_popup(vector_store):
     """Render the delete confirmation popup."""
     if st.session_state.get('show_delete_popup'):
@@ -186,6 +190,7 @@ def render_delete_popup(vector_store):
                     del st.session_state.doc_to_delete
                     st.rerun()
 
+# Render navigation buttons after document processing
 def render_navigation_buttons():
     """Render navigation buttons after document processing."""
     if st.session_state.document_processed:
