@@ -4,9 +4,10 @@ hybrid_search.py
 Advanced hybrid search combining BM25 keyword search with vector search.
 """
 from typing import List, Dict, Optional, Tuple
-from rank_bm25 import BM25Okapi
-from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
+from rank_bm25 import BM25Okapi # BM25Okapi is a class that implements the BM25 algorithm
+from sklearn.feature_extraction.text import TfidfVectorizer # TfidfVectorizer is a class that implements the TF-IDF algorithm
+from .vector_store import query_similar_chunks # query_similar_chunks is a function that queries the vector store for similar chunks
+import numpy as np # numpy is a library for numerical computing
 import re
 import openai
 from openai import OpenAI
@@ -14,9 +15,10 @@ import os
 
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-from .vector_store import query_similar_chunks
 
 
+
+## Hybrid Search Engine Class for combining BM25 and vector search
 class HybridSearchEngine:
     """
     Advanced hybrid search engine combining BM25 and vector search.
@@ -32,6 +34,10 @@ class HybridSearchEngine:
             max_features=10000
         )
     
+    #BM25 is a vector space model that uses the BM25 algorithm to rank documents
+    #TF-IDF is a vector space model that uses the TF-IDF algorithm to rank documents
+
+    # Build BM25 index from documents
     def build_index(self, documents: List[str], document_ids: List[str] = None):
         """
         Build BM25 index from documents.
@@ -43,12 +49,17 @@ class HybridSearchEngine:
         self.document_ids = document_ids or [f"doc_{i}" for i in range(len(documents))]
         
         # Tokenize documents for BM25
-        tokenized_docs = [self._tokenize(doc) for doc in documents]
-        self.bm25_index = BM25Okapi(tokenized_docs)
+        tokenized_docs = [self._tokenize(doc) for doc in documents] #tokenize means to break down the text into smaller units
+        self.bm25_index = BM25Okapi(tokenized_docs) # BM25Okapi is a class that implements the BM25 algorithm
         
         # Build TF-IDF for additional features
-        self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(documents)
-    
+        self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(documents)  
+        """ 
+        fit_transform() is a method of the TfidfVectorizer class that fits the vectorizer
+         to the documents and transforms the documents into a matrix of TF-IDF features
+      """
+    ## BM25 indexing is a technique that uses the BM25 algorithm to rank documents
+      # Tokenize text for BM25 indexing
     def _tokenize(self, text: str) -> List[str]:
         """Tokenize text for BM25 indexing."""
         # Simple tokenization - can be enhanced with NLTK/spaCy
@@ -67,6 +78,7 @@ class HybridSearchEngine:
             # Fallback analysis
             return self._simple_query_analysis(query)
         
+        # Try to analyze the query using the LLM
         try:
             prompt = f"""
             Analyze this query and provide search strategy:
@@ -80,7 +92,7 @@ class HybridSearchEngine:
             """
             
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-3.5-turbo", # gpt-3.5-turbo is a model that is used to analyze the query
                 messages=[
                     {"role": "system", "content": "You are a search query analyzer. Return only valid JSON."},
                     {"role": "user", "content": prompt}
@@ -89,13 +101,14 @@ class HybridSearchEngine:
                 max_tokens=200
             )
             
-            import json
+            import json # json is a library that is used to parse the response from the LLM
             analysis = json.loads(response.choices[0].message.content)
             return analysis
             
         except Exception as e:
             return self._simple_query_analysis(query)
     
+    # Simple fallback query analysis
     def _simple_query_analysis(self, query: str) -> Dict:
         """Simple fallback query analysis."""
         keywords = self._tokenize(query)
@@ -118,6 +131,7 @@ class HybridSearchEngine:
             "query_type": "specific" if len(keywords) <= 3 else "general"
         }
     
+    # Perform BM25 keyword search
     def bm25_search(self, query: str, top_k: int = 10) -> List[Dict]:
         """
         Perform BM25 keyword search.
@@ -135,6 +149,7 @@ class HybridSearchEngine:
         
         # Get top-k results
         top_indices = np.argsort(scores)[::-1][:top_k]
+         # argsort() is a function that sorts the scores and returns the indices of the sorted scores
         
         results = []
         for idx in top_indices:
@@ -148,6 +163,8 @@ class HybridSearchEngine:
         
         return results
     
+
+    # Perform vector search using existing vector store
     def vector_search(self, query: str, top_k: int = 10, filename: Optional[str] = None) -> List[Dict]:
         """
         Perform vector search using existing vector store.
@@ -172,6 +189,8 @@ class HybridSearchEngine:
         
         return formatted_results
     
+
+    # Perform hybrid search combining BM25 and vector search
     def hybrid_search(self, query: str, top_k: int = 10, filename: Optional[str] = None) -> List[Dict]:
         """
         Perform hybrid search combining BM25 and vector search.
@@ -197,6 +216,8 @@ class HybridSearchEngine:
         
         return combined_results
     
+    # Combine and rerank results from both search methods
+    # Rerank means taking search results and reordering them to show the most relevant ones first.
     def _combine_results(self, bm25_results: List[Dict], vector_results: List[Dict], 
                         weights: Dict, top_k: int) -> List[Dict]:
         """
@@ -260,7 +281,7 @@ class HybridSearchEngine:
 # Global hybrid search engine instance
 hybrid_engine = HybridSearchEngine()
 
-
+## Initialize the hybrid search engine with documents
 def initialize_hybrid_search(documents: List[str], document_ids: List[str] = None):
     """
     Initialize the hybrid search engine with documents.
@@ -270,7 +291,7 @@ def initialize_hybrid_search(documents: List[str], document_ids: List[str] = Non
     """
     hybrid_engine.build_index(documents, document_ids)
 
-
+## Perform hybrid search
 def hybrid_search(query: str, top_k: int = 10, filename: Optional[str] = None) -> List[Dict]:
     """
     Perform hybrid search.
